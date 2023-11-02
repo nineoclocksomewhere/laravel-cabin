@@ -1,10 +1,18 @@
-# laravel-package
-Laravel package starter template
+# laravel-cabin
+Key-based resource locking
 
 ## Installation
+You install this package using composer:
 
-- Rename all 'Package' occurrences in namespaces to the name of this package.
-- Also rename the **Package**ServiceProvider accordingly.
+```bash
+composer require nocs/laravel-cabin
+```
+
+Publish the database migrations using and run the migration:
+
+```bash
+php artisan vendor:publish --provider="Nocs\Cabin\Providers\CabinServiceProvider" --tag="migrations"
+```
 
 ## Testing
 

@@ -3,6 +3,7 @@
 namespace Nocs\Cabin\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Filesystem\Filesystem;
 use Nocs\Cabin\Support\CabinManager;
 
 /**
