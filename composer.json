@@ -1,0 +1,53 @@
+{
+    "name": "nocs/laravel-package",
+    "description": "Laravel package starter template",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Dev Name",
+            "email": "devs@nineoclocksomewhe.re",
+            "homepage": "https://nineoclocksomewhe.re"
+        }
+    ],
+    "homepage": "https://github.com/nineoclocksomewhere/laravel-package",
+    "keywords": [
+        "laravel", "package", "nineoclocksomewhere"
+    ],
+    "require": {
+        "php": "^7.3 || ^8.0",
+        "illuminate/support": "~7|~8|~9|~10"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nocs\\Package\\": "src/"
+        },
+        "files": [
+            "helpers/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Nocs\\Package\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit --testdox"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Nocs\\Package\\Providers\\PackageServiceProvider"
+            ]
+        }
+    },
+    "repositories": {
+        "nocs": {
+            "type": "composer",
+            "url": "https://packages.nineoclocksomewhe.re"
+        }
+    }
+}
