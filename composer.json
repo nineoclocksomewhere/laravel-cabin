@@ -1,16 +1,21 @@
 {
-    "name": "nocs/laravel-package",
-    "description": "Laravel package starter template",
+    "name": "nocs/laravel-cabin",
+    "description": "Key-based resource locking",
     "license": "MIT",
     "minimum-stability": "dev",
     "authors": [
         {
-            "name": "Dev Name",
-            "email": "devs@nineoclocksomewhe.re",
+            "name": "Kristoffer Dams",
+            "email": "kristoffer@nineoclocksomewhe.re",
+            "homepage": "https://nineoclocksomewhe.re"
+        },
+        {
+            "name": "Alan Schatteman",
+            "email": "alan@nineoclocksomewhe.re",
             "homepage": "https://nineoclocksomewhe.re"
         }
     ],
-    "homepage": "https://github.com/nineoclocksomewhere/laravel-package",
+    "homepage": "https://github.com/nineoclocksomewhere/laravel-cabin",
     "keywords": [
         "laravel", "package", "nineoclocksomewhere"
     ],
@@ -23,7 +28,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Nocs\\Package\\": "src/"
+            "Nocs\\Cabin\\": "src/"
         },
         "files": [
             "helpers/helpers.php"
@@ -31,7 +36,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Nocs\\Package\\Tests\\": "tests/"
+            "Nocs\\Cabin\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -40,7 +45,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Nocs\\Package\\Providers\\PackageServiceProvider"
+                "Nocs\\Cabin\\Providers\\CabinServiceProvider"
             ]
         }
     },

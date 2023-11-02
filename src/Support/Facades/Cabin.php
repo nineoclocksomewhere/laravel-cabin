@@ -1,13 +1,13 @@
 <?php
 
-namespace Nocs\Package\Support\Facades;
+namespace Nocs\Cabin\Support\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
 /**
- * Package facade class
+ * Cabin facade class
  */
-class Package extends Facade
+class Cabin extends Facade
 {
 
     /**
@@ -18,7 +18,7 @@ class Package extends Facade
     protected static function getFacadeAccessor()
     {
 
-        return 'package';
+        return 'cabin';
 
     }
 

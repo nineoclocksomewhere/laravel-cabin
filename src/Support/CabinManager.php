@@ -1,8 +1,8 @@
 <?php
 
-namespace Nocs\Package\Support;
+namespace Nocs\Cabin\Support;
 
-class PackageManager
+class CabinManager
 {
 
     /**

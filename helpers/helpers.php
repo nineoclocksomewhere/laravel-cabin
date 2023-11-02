@@ -1,16 +1,12 @@
 <?php
 
-if (! function_exists('package')) {
+if (! function_exists('cabin')) {
     /**
-     * package helper
+     * Cabin helper
      *
-     * @param  dynamic  null
-     * @return mixed|\Nocs\Package\Support\PackageManager
-     *
-     * @throws \Exception
      */
-    function package()
+    function cabin()
     {
-        return app('package');
+        return app('cabin');
     }
 }
