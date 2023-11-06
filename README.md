@@ -24,7 +24,7 @@ php artisan vendor:publish --provider="Nocs\Cabin\Providers\CabinServiceProvider
 
 ## Usage
 
-You can freely determine the key. For example your modelname followed by the id of the item. A lock is defined by the key and the session id. If available the user id will be stored as extra info.
+You can freely determine the key. For example your modelname followed by the id of the item. A lock is defined by the key and the users session id. If available, the user id will be stored as extra info.
 
 ```php
   cabin()->lock('blog_12');
