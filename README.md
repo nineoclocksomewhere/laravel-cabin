@@ -9,6 +9,7 @@ composer require nocs/laravel-cabin
 ```
 
 The config allows you to set the expiration time. The default expiration time is 10 minutes.
+
 Publish the config using:
 
 ```bash
@@ -23,7 +24,7 @@ php artisan vendor:publish --provider="Nocs\Cabin\Providers\CabinServiceProvider
 
 ## Usage
 
-You can freely determine the key. For example your model followed by the id of item. A lock is defined by the key and the session id. If available the user id will be stored as extra info.
+You can freely determine the key. For example your modelname followed by the id of the item. A lock is defined by the key and the session id. If available the user id will be stored as extra info.
 
 ```php
   cabin()->lock('blog_12');
@@ -37,7 +38,7 @@ You can freely determine the key. For example your model followed by the id of i
   cabin()->removeExpired();
 ```
 
-You can reset the locak time by pinging
+You can reset the locked time by pinging
 
 ```php
   cabin()->ping('blog_12');
