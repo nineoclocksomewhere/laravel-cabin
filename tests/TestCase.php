@@ -1,32 +1,52 @@
 <?php
 
-namespace Nocs\Package\Tests;
+namespace Nocs\Cabin\Tests;
 
-use Nocs\Package\Providers\PackageServiceProvider;
+use Nocs\Cabin\Providers\CabinServiceProvider;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
 
 class TestCase extends \Orchestra\Testbench\TestCase
 {
+    use RefreshDatabase;
 
     public function setUp(): void
     {
 
         parent::setUp();
 
-        // additional setup
+        $this->runMigrations();
 
+    }
+
+    private function runMigrations() {
+        include_once __DIR__.'/Database/migrations/create_articles_table.php.stub';
+        (new \CreateArticlesTable())->up();
+
+        include_once __DIR__.'/Database/migrations/create_users_table.php.stub';
+        (new \CreateUsersTable())->up();
+
+        include_once __DIR__.'/../database/migrations/create_cabin_lock_table.php.stub';
+        (new \CreateCabinLockTable())->up();
     }
 
     protected function getPackageProviders($app)
     {
         return [
-            PackageServiceProvider::class,
+            CabinServiceProvider::class,
         ];
     }
 
     protected function getEnvironmentSetUp($app)
     {
 
-        // perform environment setup
+        config()->set('database.default', 'sqlite');
+        config()->set('database.connections.sqlite', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
 
     }
 
