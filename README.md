@@ -50,6 +50,11 @@ You can use the following command to remove expired locks
 php artisan cabin:remove-expired
 ```
 
+You can get the id of the user that initiated the lock
+
+```php
+  cabin()->lockedBy();
+```
 
 ## Testing
 
