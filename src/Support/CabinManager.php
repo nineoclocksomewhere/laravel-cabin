@@ -29,6 +29,11 @@ class CabinManager
         $this->sessionID = session()->getId() ?? null;
     }
 
+    public function refreshSessionID ()
+    {
+        $this->sessionID = session()->getId() ?? null;
+    }
+
     public function lock ($key)
     {
         if ($this->isLocked($key)) {
@@ -67,6 +72,14 @@ class CabinManager
             ->where('session_id', '!=', $this->sessionID)
             ->count()
                 > 0;
+    }
+
+    public function lockedBy ($key)
+    {
+        $this->removeExpired();
+        
+        return CabinLock::where('key', $this->createKey($key))
+            ->value('locked_by') ?? false;
     }
 
     public function removeExpired ()
