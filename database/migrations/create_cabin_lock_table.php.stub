@@ -17,14 +17,9 @@ class CreateCabinLockTable extends Migration
             $table->id();
             $table->string('key');
             $table->string('session_id');
-            $table->foreignId('locked_by')->nullable();
+            $table->unsignedBigInteger('locked_by')->nullable();
+            $table->string('locked_guard')->nullable();
             $table->dateTime('locked_at');
-
-            $table->foreign('locked_by')
-                ->references('id')
-                ->on('users')
-                ->onDelete('cascade');
-            
         });
 
         Schema::enableForeignKeyConstraints();

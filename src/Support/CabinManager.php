@@ -5,6 +5,7 @@ namespace Nocs\Cabin\Support;
 use Nocs\Cabin\Models\CabinLock;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
 class CabinManager
@@ -49,6 +50,7 @@ class CabinManager
 
         if (! $lock->exists) {
             $lock->locked_by = Auth::id() ?? null;
+            $lock->locked_guard = $this->lookupGuard();
         }
 
         return $lock->save();
@@ -109,6 +111,21 @@ class CabinManager
     public function createKey($key)
     {
         return md5(Str::slug($key));
+    }
+
+    private function lookupGuard() {
+        if ($user = Auth::user()) {
+            $guards = Arr::where(array_keys(config('auth.guards')), function (string|int $value, int $key) {
+                return $value != 'sanctum';
+            });
+            foreach ($guards as $guard) {
+                if (Auth::guard($guard)->check()) {
+                    return $guard;
+                }
+            }
+        }
+
+        return Auth::getDefaultDriver();
     }
 
     /**
