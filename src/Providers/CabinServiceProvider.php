@@ -22,7 +22,7 @@ class CabinServiceProvider extends ServiceProvider
     public function register()
     {
 
-        $this->app->singleton('cabin', function ($app) {
+        $this->app->bind('cabin', function ($app) {
             return new CabinManager($app);
         });
 
