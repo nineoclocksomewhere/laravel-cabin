@@ -17,6 +17,7 @@ class CabinManager
      */
     protected $app;
     private $sessionID;
+    private $connection;
 
     /**
      * Constructor
@@ -27,7 +28,15 @@ class CabinManager
     {
         $this->app = $app;
 
+        $this->connection = config('database.default');
+
         $this->sessionID = session()->getId() ?? null;
+    }
+
+    public function connection($connection)
+    {
+        $this->connection = $connection;
+        return $this;
     }
 
     public function refreshSessionID ()
@@ -41,7 +50,7 @@ class CabinManager
             return false;
         }
 
-        $lock = CabinLock::firstOrNew([
+        $lock = CabinLock::on($this->connection)->firstOrNew([
             'key'           => $this->createKey($key),
             'session_id'    => $this->sessionID,
         ]);
@@ -58,7 +67,7 @@ class CabinManager
 
     public function unlock ($key)
     {
-        CabinLock::where([
+        CabinLock::on($this->connection)->where([
             'key'           => $this->createKey($key),
             'session_id'    => $this->sessionID,
         ])->delete();
@@ -70,7 +79,7 @@ class CabinManager
     {
         $this->removeExpired();
 
-        return CabinLock::where('key', $this->createKey($key))
+        return CabinLock::on($this->connection)->where('key', $this->createKey($key))
             ->where('session_id', '!=', $this->sessionID)
             ->count()
                 > 0;
@@ -80,7 +89,7 @@ class CabinManager
     {
         $this->removeExpired();
         
-        return CabinLock::where('key', $this->createKey($key))
+        return CabinLock::on($this->connection)->where('key', $this->createKey($key))
             ->value('locked_by') ?? false;
     }
 
@@ -88,14 +97,14 @@ class CabinManager
     {
         $time = Carbon::now()->subSeconds( config('cabin.expiration_time', 10 * 60) );
         
-        CabinLock::where( 'locked_at', '<=', $time )->delete();
+        CabinLock::on($this->connection)->where( 'locked_at', '<=', $time )->delete();
 
         return true;
     }
 
     public function ping ($key)
     {
-        if ($lock = CabinLock::where([
+        if ($lock = CabinLock::on($this->connection)->where([
             'key'           => $this->createKey($key),
             'session_id'    => $this->sessionID,
         ])->first()) {

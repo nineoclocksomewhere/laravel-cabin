@@ -17,6 +17,11 @@ class TestCase extends \Orchestra\Testbench\TestCase
         parent::setUp();
 
         $this->runMigrations();
+        
+        config()->set('database.default', 'sqliteB');
+        $this->runMigrations();
+        
+        config()->set('database.default', 'sqlite');
 
     }
 
@@ -43,6 +48,12 @@ class TestCase extends \Orchestra\Testbench\TestCase
 
         config()->set('database.default', 'sqlite');
         config()->set('database.connections.sqlite', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+        ]);
+
+        config()->set('database.connections.sqliteB', [
             'driver' => 'sqlite',
             'database' => ':memory:',
             'prefix' => '',

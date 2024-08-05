@@ -2,6 +2,7 @@
 
 namespace Nocs\Cabin\Tests\Feature;
 
+use Nocs\Cabin\Models\CabinLock;
 use Nocs\Cabin\Tests\TestCase;
 use Nocs\Cabin\Tests\Models\Article;
 use Nocs\Cabin\Tests\Models\User;
@@ -106,6 +107,46 @@ class CabinFeatureTest extends TestCase
         cabin()->refreshSessionID();
 
         $this->assertTrue(cabin()->isLocked($key));
+
+    }
+
+    /** @test */
+    public function a_database_connection_can_be_set()
+    {
+
+        cabin()->lock('normal_lock');
+        $this->assertEquals(1, CabinLock::count());
+        $this->assertEquals(0, CabinLock::on('sqliteB')->count());
+
+        cabin()->unlock('normal_lock');
+        $this->assertEquals(0, CabinLock::count());
+
+        cabin()->connection('sqliteB')->lock('connection_lock');
+        $this->assertEquals(0, CabinLock::count());
+        $this->assertEquals(1, CabinLock::on('sqliteB')->count());
+
+        cabin()->lock('normal_lock');
+        $this->assertEquals(1, CabinLock::count());
+        $this->assertEquals(1, CabinLock::on('sqliteB')->count());
+
+        cabin()->lock('second_normal_lock');
+        $this->assertEquals(2, CabinLock::count());
+
+        cabin()->connection('sqliteB')->lock('second_connection_lock');
+        $this->assertEquals(2, CabinLock::on('sqliteB')->count());
+
+        cabin()->connection('sqliteB')->unlock('connection_lock');
+        $this->assertEquals(2, CabinLock::count());
+        $this->assertEquals(1, CabinLock::on('sqliteB')->count());
+
+        $this->travel(30)->minutes();
+        cabin()->removeExpired();
+        $this->assertEquals(0, CabinLock::count());
+        $this->assertEquals(1, CabinLock::on('sqliteB')->count());
+
+        cabin()->connection('sqliteB')->removeExpired();
+        $this->assertEquals(0, CabinLock::count());
+        $this->assertEquals(0, CabinLock::on('sqliteB')->count());
 
     }
 

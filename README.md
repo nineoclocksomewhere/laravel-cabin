@@ -56,6 +56,11 @@ You can get the id of the user that initiated the lock
   cabin()->lockedBy();
 ```
 
+You can manually set a DB connection
+```php
+  cabin()->connection('sqlB')->lock('blog_12');
+```
+
 ## Testing
 
 For new packages use command:
