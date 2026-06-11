@@ -2,7 +2,6 @@
 
 namespace Nocs\Cabin\Models;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,7 +27,7 @@ class CabinLock extends Model
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(config('cabin.models.user', User::class), 'locked_by');
+        return $this->belongsTo(config('cabin.models.user', 'App\\Models\\User'), 'locked_by');
     }
 
     public function isExpired(): bool
