@@ -21,6 +21,7 @@ class CabinServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->mergeConfigFrom(__DIR__.'/../../config/cabin.php', 'cabin');
 
         $this->app->bind('cabin', function ($app) {
             return new CabinManager($app);
