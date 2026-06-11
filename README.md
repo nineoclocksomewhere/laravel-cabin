@@ -1,14 +1,22 @@
 # laravel-cabin
+
 Key-based resource locking by session ID
 
 ## Installation
+
 You install this package using composer:
 
 ```bash
 composer require nocs/laravel-cabin
 ```
 
-The config allows you to set the expiration time. The default expiration time is 10 minutes.
+The config allows you to set the expiration time and the user model. The default expiration time is 10 minutes. The default user model is App\Models\User
+
+```php
+'models' => [
+    'user' => Your\Custom\Models\User::class,
+],
+```
 
 Publish the config using:
 
@@ -57,6 +65,7 @@ You can get the id of the user that initiated the lock
 ```
 
 You can manually set a DB connection
+
 ```php
   cabin()->connection('sqlB')->lock('blog_12');
 ```
@@ -64,16 +73,19 @@ You can manually set a DB connection
 ## Testing
 
 For new packages use command:
+
 ```sh
 composer require --dev "orchestra/testbench=^6.0"
 ```
 
 But for this project the composer.json is already up-to-date, so run:
+
 ```sh
 composer install --dev
 ```
 
 To test, run:
+
 ```sh
 composer test
 ```
