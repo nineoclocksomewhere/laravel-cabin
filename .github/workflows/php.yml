@@ -8,28 +8,30 @@ on:
 
 jobs:
   build:
-
+    name: PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4', '8.5']
 
     steps:
-    - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate --strict
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+          extensions: mbstring, dom, sqlite3, pdo_sqlite
+          coverage: none
 
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v2
-      with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
 
-    - name: Install dependencies
-      env: 
-        COMPOSER_AUTH: '{"github-oauth": {"github.com": "${{secrets.COMPOSER_AUTH}}"} }' 
-      run: composer install --prefer-dist --no-progress
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
 
-    - name: Run test suite
-      run: composer run-script test
+      - name: Run test suite
+        run: composer run-script test
