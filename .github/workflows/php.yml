@@ -31,6 +31,8 @@ jobs:
         run: composer validate --strict
 
       - name: Install dependencies
+        env:
+          COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
         run: composer install --prefer-dist --no-interaction --no-progress
 
       - name: Run test suite
