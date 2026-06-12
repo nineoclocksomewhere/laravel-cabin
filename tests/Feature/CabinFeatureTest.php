@@ -14,8 +14,7 @@ class CabinFeatureTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
-    public function an_article_can_be_locked()
+    public function test_an_article_can_be_locked()
     {
         $userA = User::factory()->create();
         $userB = User::factory()->create();
@@ -40,8 +39,7 @@ class CabinFeatureTest extends TestCase
 
     }
 
-    /** @test */
-    public function locked_article_expires()
+    public function test_locked_article_expires()
     {
 
         $userA = User::factory()->create();
@@ -69,8 +67,7 @@ class CabinFeatureTest extends TestCase
 
     }
 
-    /** @test */
-    public function locked_article_article_can_be_pinged()
+    public function test_locked_article_article_can_be_pinged()
     {
 
         $userA = User::factory()->create();
@@ -110,8 +107,7 @@ class CabinFeatureTest extends TestCase
 
     }
 
-    /** @test */
-    public function a_database_connection_can_be_set()
+    public function test_a_database_connection_can_be_set()
     {
 
         cabin()->lock('normal_lock');
