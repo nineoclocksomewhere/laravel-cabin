@@ -6,6 +6,7 @@ use Nocs\Cabin\Models\CabinLock;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 
 class CabinManager
@@ -62,7 +63,15 @@ class CabinManager
             $lock->locked_guard = $this->lookupGuard();
         }
 
-        return $lock->save();
+        try {
+            return $lock->save();
+        } catch (QueryException $exception) {
+            if ($this->isUniqueConstraintViolation($exception)) {
+                return false;
+            }
+
+            throw $exception;
+        }
     }
 
     public function unlock ($key)
@@ -135,6 +144,18 @@ class CabinManager
         }
 
         return Auth::getDefaultDriver();
+    }
+
+    private function isUniqueConstraintViolation(QueryException $exception): bool
+    {
+        $sqlState = $exception->errorInfo[0] ?? null;
+        $driverCode = (string) ($exception->errorInfo[1] ?? $exception->getCode());
+        $message = strtolower($exception->getMessage());
+
+        return in_array($sqlState, ['23000', '23505'], true)
+            || in_array($driverCode, ['19', '1062', '2067'], true)
+            || str_contains($message, 'unique constraint')
+            || str_contains($message, 'duplicate entry');
     }
 
     /**

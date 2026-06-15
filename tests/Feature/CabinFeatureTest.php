@@ -146,4 +146,30 @@ class CabinFeatureTest extends TestCase
 
     }
 
+    public function test_only_one_session_can_hold_a_lock_key()
+    {
+        $userA = User::factory()->create();
+        $userB = User::factory()->create();
+        $article = Article::factory()->create();
+
+        $this->be($userA);
+        Session::shouldReceive('getId')
+                ->byDefault()
+                ->andReturn('session_user_A');
+
+        $key = 'article_'. $article->id;
+
+        $this->assertTrue(cabin()->lock($key));
+
+        $this->be($userB);
+        Session::shouldReceive('getId')
+                ->byDefault()
+                ->andReturn('session_user_B');
+        cabin()->refreshSessionID();
+
+        $this->assertFalse(cabin()->lock($key));
+        $this->assertEquals(1, CabinLock::where('key', cabin()->createKey($key))->count());
+        $this->assertEquals($userA->id, cabin()->lockedBy($key));
+    }
+
 }
