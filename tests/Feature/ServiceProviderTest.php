@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Nocs\Cabin\Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Nocs\Cabin\Providers\CabinServiceProvider;
@@ -54,5 +55,11 @@ final class ServiceProviderTest extends BaseTestCase
     public function testItLoadsPackageMigrationsByDefault(): void
     {
         self::assertTrue(Schema::hasTable('cabin_lock'));
+
+        $indexes = collect(DB::select("PRAGMA index_list('cabin_lock')"))->pluck('name')->all();
+
+        self::assertContains('cabin_lock_key_index', $indexes);
+        self::assertContains('cabin_lock_key_session_id_index', $indexes);
+        self::assertContains('cabin_lock_locked_at_index', $indexes);
     }
 }

@@ -35,6 +35,9 @@ class TestCase extends \Orchestra\Testbench\TestCase
         \Illuminate\Support\Facades\Schema::dropIfExists('cabin_lock');
         $migration = require __DIR__.'/../database/migrations/2026_06_12_000000_create_cabin_lock_table.php';
         $migration->up();
+
+        $indexMigration = require __DIR__.'/../database/migrations/2026_06_15_000000_add_indexes_to_cabin_lock_table.php';
+        $indexMigration->up();
     }
 
     protected function getPackageProviders($app)
