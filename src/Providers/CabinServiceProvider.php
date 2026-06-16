@@ -43,14 +43,17 @@ class CabinServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             // Export the migration
             $this->publishes([
-                __DIR__.'/../../database/migrations/create_cabin_lock_table.php.stub' => $this->getMigrationFileName('create_cabin_lock_table.php'),
-                
-            ], 'migrations');
+                __DIR__.'/../../database/migrations/2026_06_12_000000_create_cabin_lock_table.php' => $this->getMigrationFileName('create_cabin_lock_table.php'),
+            ], 'cabin-migrations');
 
             // Export the config
             $this->publishes([
                 __DIR__.'/../../config/cabin.php' => config_path('cabin.php'),
             ], 'config');
+        }
+
+        if ((bool) config('cabin.load_migrations', true)) {
+            $this->loadMigrationsFrom(__DIR__.'/../../database/migrations');
         }
 
     }

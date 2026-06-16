@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::disableForeignKeyConstraints();
+
+        Schema::create('cabin_lock', function (Blueprint $table) {
+            $table->id();
+            $table->string('key');
+            $table->string('session_id');
+            $table->unsignedBigInteger('locked_by')->nullable();
+            $table->string('locked_guard')->nullable();
+            $table->dateTime('locked_at');
+        });
+
+        Schema::enableForeignKeyConstraints();
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('cabin_lock');
+    }
+};

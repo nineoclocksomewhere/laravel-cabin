@@ -32,8 +32,9 @@ class TestCase extends \Orchestra\Testbench\TestCase
         include_once __DIR__.'/Database/migrations/create_users_table.php.stub';
         (new \CreateUsersTable())->up();
 
-        include_once __DIR__.'/../database/migrations/create_cabin_lock_table.php.stub';
-        (new \CreateCabinLockTable())->up();
+        \Illuminate\Support\Facades\Schema::dropIfExists('cabin_lock');
+        $migration = require __DIR__.'/../database/migrations/2026_06_12_000000_create_cabin_lock_table.php';
+        $migration->up();
     }
 
     protected function getPackageProviders($app)

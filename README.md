@@ -12,12 +12,13 @@ You install this package using composer:
 composer require nocs/laravel-cabin
 ```
 
-The config allows you to set the expiration time and the user model. The default expiration time is 10 minutes. The default user model is App\Models\User
+The config allows you to set the expiration time, whether the package migrations should be loaded automatically, and the user model. The default expiration time is 10 minutes. The default user model is App\Models\User
 
 ```php
 'models' => [
     'user' => Your\Custom\Models\User::class,
 ],
+'load_migrations' => true,
 ```
 
 Publish the config using:
@@ -26,10 +27,17 @@ Publish the config using:
 php artisan vendor:publish --provider="Nocs\Cabin\Providers\CabinServiceProvider" --tag="config"
 ```
 
-Publish the database migrations using and run the migration:
+The package loads its migration automatically by default. If you want to own the vendor migration explicitly, publish it with:
 
 ```bash
-php artisan vendor:publish --provider="Nocs\Cabin\Providers\CabinServiceProvider" --tag="migrations"
+php artisan vendor:publish --provider="Nocs\Cabin\Providers\CabinServiceProvider" --tag="cabin-migrations"
+```
+
+If you want to disable automatic loading, set:
+
+```php
+// config/cabin.php
+'load_migrations' => false,
 ```
 
 ## Usage
