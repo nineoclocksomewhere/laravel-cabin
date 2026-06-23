@@ -17,7 +17,7 @@ class CreateCabinLockTable extends Migration
             $table->id();
             $table->string('key');
             $table->string('session_id');
-            $table->unsignedBigInteger('locked_by')->nullable();
+            $table->string('locked_by')->nullable();
             $table->string('locked_guard')->nullable();
             $table->dateTime('locked_at');
             $table->unique('key', 'cabin_lock_key_unique');

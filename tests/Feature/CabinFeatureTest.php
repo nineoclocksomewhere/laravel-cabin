@@ -6,7 +6,10 @@ use Nocs\Cabin\Models\CabinLock;
 use Nocs\Cabin\Tests\TestCase;
 use Nocs\Cabin\Tests\Models\Article;
 use Nocs\Cabin\Tests\Models\User;
+use Nocs\Cabin\Tests\Models\UuidUser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Carbon;
 
@@ -170,6 +173,36 @@ class CabinFeatureTest extends TestCase
         $this->assertFalse(cabin()->lock($key));
         $this->assertEquals(1, CabinLock::where('key', cabin()->createKey($key))->count());
         $this->assertEquals($userA->id, cabin()->lockedBy($key));
+    }
+
+    public function test_a_string_user_id_can_hold_a_lock()
+    {
+        Schema::create('uuid_users', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->string('name');
+            $table->string('email');
+            $table->timestamps();
+        });
+
+        config()->set('cabin.models.user', UuidUser::class);
+
+        $user = UuidUser::create([
+            'id' => '018f6a78-0a52-73cc-9f0d-f8c2c7f2f4b5',
+            'name' => 'Uuid User',
+            'email' => 'uuid@example.test',
+        ]);
+        $article = Article::factory()->create();
+
+        $this->be($user);
+        Session::shouldReceive('getId')
+                ->byDefault()
+                ->andReturn('session_uuid_user');
+
+        $key = 'article_'. $article->id;
+
+        $this->assertTrue(cabin()->lock($key));
+        $this->assertSame($user->id, cabin()->lockedBy($key));
+        $this->assertSame($user->id, CabinLock::first()->user->id);
     }
 
 }
