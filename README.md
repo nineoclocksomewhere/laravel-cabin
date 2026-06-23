@@ -12,7 +12,7 @@ You install this package using composer:
 composer require nocs/laravel-cabin
 ```
 
-The published config keeps the package surface small:
+The published config is grouped by goal:
 
 | Goal | Key | Values | Behavior |
 | --- | --- | --- | --- |
