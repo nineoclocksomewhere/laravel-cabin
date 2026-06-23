@@ -12,13 +12,25 @@ You install this package using composer:
 composer require nocs/laravel-cabin
 ```
 
-The config allows you to set the expiration time, whether the package migrations should be loaded automatically, and the user model. The default expiration time is 10 minutes. The default user model is App\Models\User
+The published config keeps the package surface small:
+
+| Goal | Key | Values | Behavior |
+| --- | --- | --- | --- |
+| Lock lifetime | `expiration_time` | Integer seconds, default `600` | Controls when an inactive lock expires. |
+| Migration loading | `load_migrations` | `true` / `false` | Loads the package migrations automatically when `true`. |
+| Lock owner lookup | `models.user` | Class-string, default `App\Models\User` | Resolves the user attached to `locked_by` when the package shows lock ownership. |
+
+Example:
 
 ```php
-'models' => [
-    'user' => Your\Custom\Models\User::class,
-],
-'load_migrations' => true,
+// config/cabin.php
+return [
+    'expiration_time' => 10 * 60,
+    'load_migrations' => true,
+    'models' => [
+        'user' => Your\Custom\Models\User::class,
+    ],
+];
 ```
 
 Publish the config using:
