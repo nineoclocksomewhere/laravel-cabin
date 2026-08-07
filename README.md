@@ -2,7 +2,11 @@
 
 Key-based resource locking by session ID
 
-This fork supports Laravel 12 and Laravel 13. Laravel 13 requires PHP 8.3+ so Composer can resolve the newer Testbench stack.
+## Documentation
+
+See the [package documentation](docs/README.md) for installation, configuration, public API, architecture, dependencies, and verification evidence.
+
+This package supports Laravel 12 and Laravel 13. Laravel 13 requires PHP 8.3+ so Composer can resolve the newer Testbench stack.
 
 ## Installation
 
