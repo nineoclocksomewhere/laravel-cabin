@@ -1,41 +1,39 @@
-# Architecture and extension points
+# Architecture
 
-## Package boundaries
+## Bootstrapping
 
-- `Nocs\\Cabin\\Providers\\CabinServiceProvider` merges config, binds the manager, registers the command, publishes assets, and loads migrations.
-- `Nocs\\Cabin\\Support\\CabinManager` owns session-aware locking, key normalization, connection selection, expiration cleanup, and guard detection.
-- `Nocs\\Cabin\\Models\\CabinLock` is the Eloquent persistence model for `cabin_lock`.
-- `Nocs\\Cabin\\Commands\\CabinLockRemoveExpired` exposes scheduled cleanup.
-- `Nocs\\Cabin\\Support\\Facades\\Cabin` provides the facade accessor for the `cabin` binding.
-- `helpers/helpers.php` defines the `cabin()` helper.
+`CabinServiceProvider`:
 
-## Extension points
+1. merges `config/cabin.php` under the `cabin` key;
+2. binds `cabin` to a new `CabinManager`;
+3. registers `CabinLockRemoveExpired`;
+4. in console, exposes `config` and `cabin-migrations` publish tags; and
+5. loads `database/migrations` unless `cabin.load_migrations` is false.
 
-The supported customization points are configuration and Laravel integration:
+Composer package discovery points Laravel at this provider.
 
-1. Set `models.user` to a custom user model implementing the relationship expected by Eloquent.
-2. Select a database connection with `cabin()->connection(...)` before performing operations.
-3. Publish and own migrations when the host application needs explicit migration control.
-4. Add application-level wrappers, policies, UI, and scheduled tasks around the public manager API.
+## Lock lifecycle
 
-There is no documented interface for replacing the manager, model, key hashing, expiration strategy, or guard lookup. Replacing those internals requires an application-specific binding/subclass strategy and should be treated as a compatibility-sensitive change.
+The manager captures the default database connection and session ID when constructed. For a lock operation it slug-normalizes the caller's key, hashes it with MD5, removes expired records, and checks for rows owned by a different session. A new row records:
 
-## Key and session semantics
+- normalized hashed `key`;
+- `session_id`;
+- `locked_at`;
+- authenticated `locked_by`, when available; and
+- the detected non-Sanctum `locked_guard`, or the default auth driver.
 
-`createKey($key)` applies `Str::slug($key)` and then MD5. Different inputs that slug to the same value therefore share a lock. The manager caches the session ID at construction; call `refreshSessionID()` if a long-lived process changes session context.
+`ping()` updates only the current session's row. `unlock()` deletes only that row. `isLocked()` and `lockedBy()` remove expired rows before reading.
 
-`isLocked()` deliberately excludes the current session. This allows a session to reacquire/refresh its own logical lock while reporting contention only to other sessions. `lockedBy()` returns the stored owner for the normalized key without filtering by session.
+## Persistence model
 
-## Concurrency and failure behavior
+The migrations create `cabin_lock` with `id`, `key`, `session_id`, nullable `locked_by`, nullable `locked_guard`, and `locked_at`. A follow-up migration adds indexes on `key`, `(key, session_id)`, and `locked_at`.
 
-The manager first performs a read check, then saves the row. If the host schema has a unique constraint, recognized unique-constraint errors provide a final contention guard and return `false`; unrelated database errors are rethrown. The current published migration creates ordinary indexes, not a unique key constraint, while the test fixture does add a unique key. Applications requiring database-enforced race protection should review this explicitly and still use transactions for the protected write itself.
+The published migrations do **not** add a unique constraint. `lock()` defensively converts recognized database unique-constraint errors into `false`, but applications that require database-enforced race protection must review their schema and concurrency requirements.
 
-The inspected code's initial migration creates the columns and the later migration adds indexes. Confirm the package migration history against the installed version before applying custom schema changes.
+## Expiration and cleanup
 
-## Integration cautions
+Expiration is calculated as `locked_at + config('cabin.expiration_time', 600)`. Reads perform opportunistic cleanup. The console command provides explicit cleanup; no scheduler, queue worker, event, or HTTP layer is registered by the package.
 
-- The lock table stores a numeric `locked_by` column in the published migration, while current tests also cover string/UUID user IDs through a custom model. Verify the target database's column behavior before relying on long string identifiers in production.
-- The package uses the current Laravel session and auth services. Queue workers and other non-session contexts need an explicit application integration decision; this package does not define a distributed worker identity.
-- Locks are advisory coordination, not authorization or ownership transfer.
+## Extension boundaries
 
-**To be documented by NOCS:** the supported policy for anonymous sessions, queue/CLI contexts, and lock takeover/administrative release.
+The package is intentionally a manager/model/provider layer. It does not define resource-specific policies, takeover behavior, UI, authorization, API routes, events, jobs, webhooks, or notifications. Host applications own those concerns.

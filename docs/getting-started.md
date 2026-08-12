@@ -1,67 +1,66 @@
 # Getting started
 
-## Requirements and installation
+## 1. Install
 
-`composer.json` declares PHP `^8.0` and `illuminate/support` `~7|~8|~9|~10|~11|~12|~13`. Laravel 13 requires PHP 8.3 or newer. Install the package in a Laravel application:
+From a Laravel application:
 
 ```bash
 composer require nocs/laravel-cabin
 ```
 
-The package registers `Nocs\\Cabin\\Providers\\CabinServiceProvider` through Laravel package discovery. If package discovery is disabled, register that provider explicitly.
+Composer package discovery registers `Nocs\\Cabin\\Providers\\CabinServiceProvider` automatically through the `extra.laravel.providers` manifest entry. If discovery is disabled, register that provider manually.
 
-## Default setup
+## 2. Run migrations
 
-By default, the service provider:
-
-1. Merges the package `config/cabin.php` configuration.
-2. Binds `cabin` to `Nocs\\Cabin\\Support\\CabinManager`.
-3. Registers `cabin:remove-expired`.
-4. Loads the package migrations automatically.
-
-The default setup needs no published files. To publish configuration:
+By default, the provider loads the package migrations automatically. Run:
 
 ```bash
-php artisan vendor:publish --provider="Nocs\\Cabin\\Providers\\CabinServiceProvider" --tag="config"
+php artisan migrate
 ```
 
-To make migrations part of the host application's migration tree instead:
+This creates `cabin_lock` and its indexes. To publish the migrations into the host application instead:
 
 ```bash
 php artisan vendor:publish --provider="Nocs\\Cabin\\Providers\\CabinServiceProvider" --tag="cabin-migrations"
 ```
 
-If the host owns those migrations, set `load_migrations` to `false` to avoid loading them twice.
-
-## Basic usage
-
-Use a stable logical key, normally composed from a resource type and identifier:
+Then set `load_migrations` to `false` and run the published migrations:
 
 ```php
-$key = 'article_'.$article->id;
-
-if (cabin()->lock($key)) {
-    // This session acquired the lock.
-}
-
-if (cabin()->isLocked($key)) {
-    // Another session currently holds the lock.
-}
-
-cabin()->ping($key);   // refresh this session's lock timestamp
-cabin()->unlock($key); // release this session's lock
+// config/cabin.php
+'load_migrations' => false,
 ```
 
-`lock()` and `unlock()` operate against the configured default database connection. Select a connection before an operation when the lock table is on another connection:
+The publisher reuses an existing host migration with the same filename when one is present.
+
+## 3. Publish configuration (optional)
+
+```bash
+php artisan vendor:publish --provider="Nocs\\Cabin\\Providers\\CabinServiceProvider" --tag="config"
+```
+
+The defaults are:
 
 ```php
-cabin()->connection('sqlB')->lock($key);
+return [
+    'expiration_time' => 10 * 60,
+    'load_migrations' => true,
+    'models' => [
+        'user' => App\\Models\\User::class,
+    ],
+];
 ```
 
-For a console cleanup, run:
+## 4. Acquire and release a lock
+
+Choose a stable application key and use `lock()` before protected work. Always release it in a `finally` block; use `ping()` for work that can outlive the expiration interval. See [Usage](usage.md) for the complete lifecycle.
+
+## 5. Schedule cleanup
+
+Reads clean up expired rows for the selected connection, but abandoned rows can remain when a key is never read again. Schedule the command in the host application's scheduler or invoke it from another maintenance process:
 
 ```bash
 php artisan cabin:remove-expired
 ```
 
-The package does not define application-specific authorization, UI, or takeover behavior. Add those policies in the consuming application.
+The command reports `Expired locks have been removed` after calling `cabin()->removeExpired()`.
