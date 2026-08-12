@@ -1,117 +1,54 @@
-# laravel-cabin
+# Laravel Cabin
 
-Key-based resource locking by session ID
+Laravel Cabin provides session-scoped, key-based locks for shared resources. Use it when an application needs to coordinate concurrent editing or processing of a logical resource such as `article_123`.
 
 ## Documentation
 
-See the [package documentation](docs/README.md) for installation, configuration, public API, architecture, dependencies, and verification evidence.
+- [Documentation hub](docs/README.md)
+- [Getting started](docs/getting-started.md)
+- [Usage guide](docs/usage.md)
+- [API reference](docs/reference.md)
+- [Architecture and data model](docs/architecture.md)
+- [Compatibility and integration surface](docs/compatibility.md)
+- [Testing and verification](docs/testing.md)
 
-This package supports Laravel 12 and Laravel 13. Laravel 13 requires PHP 8.3+ so Composer can resolve the newer Testbench stack.
-
-## Installation
-
-You install this package using composer:
+## Quick start
 
 ```bash
 composer require nocs/laravel-cabin
-```
-
-The published config is grouped by goal:
-
-| Goal | Key | Values | Behavior |
-| --- | --- | --- | --- |
-| Lock lifetime | `expiration_time` | Integer seconds, default `600` | Controls when an inactive lock expires. |
-| Migration loading | `load_migrations` | `true` / `false` | Loads the package migrations automatically when `true`. |
-| Lock owner lookup | `models.user` | Class-string, default `App\Models\User` | Resolves the user attached to `locked_by` when the package shows lock ownership. |
-
-Example:
-
-```php
-// config/cabin.php
-return [
-    'expiration_time' => 10 * 60,
-    'load_migrations' => true,
-    'models' => [
-        'user' => Your\Custom\Models\User::class,
-    ],
-];
-```
-
-Publish the config using:
-
-```bash
-php artisan vendor:publish --provider="Nocs\Cabin\Providers\CabinServiceProvider" --tag="config"
-```
-
-The package loads its migration automatically by default. If you want to own the vendor migration explicitly, publish it with:
-
-```bash
-php artisan vendor:publish --provider="Nocs\Cabin\Providers\CabinServiceProvider" --tag="cabin-migrations"
-```
-
-If you want to disable automatic loading, set:
-
-```php
-// config/cabin.php
-'load_migrations' => false,
-```
-
-## Usage
-
-You can freely determine the key. For example your modelname followed by the id of the item. A lock is defined by the key and the users session id. If available, the user id will be stored as extra info.
-
-```php
-  cabin()->lock('blog_12');
+php artisan migrate
 ```
 
 ```php
-  cabin()->unlock('blog_12');
+$key = 'article_'.$article->getKey();
+
+if (! cabin()->lock($key)) {
+    abort(409, 'This resource is being edited by another session.');
+}
+
+try {
+    // Work with the resource.
+} finally {
+    cabin()->unlock($key);
+}
 ```
 
-```php
-  cabin()->removeExpired();
-```
+The package identifies ownership by the current session ID. It stores the authenticated user ID and detected guard when available, but a lock is a coordination mechanism—not an authorization check.
 
-You can reset the locked time by pinging
+## Requirements
 
-```php
-  cabin()->ping('blog_12');
-```
+- PHP `^8.0`
+- Illuminate Support `~7|~8|~9|~10|~11|~12|~13`
+- Laravel applications should use the Illuminate version compatible with their framework version.
 
-You can use the following command to remove expired locks
+## Cleanup
+
+Expired locks are removed opportunistically by lock-state reads and can be removed explicitly:
 
 ```bash
 php artisan cabin:remove-expired
 ```
 
-You can get the id of the user that initiated the lock
+## License
 
-```php
-  cabin()->lockedBy();
-```
-
-You can manually set a DB connection
-
-```php
-  cabin()->connection('sqlB')->lock('blog_12');
-```
-
-## Testing
-
-For new packages use command:
-
-```sh
-composer require --dev "orchestra/testbench=^6.0"
-```
-
-But for this project the composer.json is already up-to-date, so run:
-
-```sh
-composer install --dev
-```
-
-To test, run:
-
-```sh
-composer test
-```
+Laravel Cabin is open-sourced under the [MIT license](LICENSE).
