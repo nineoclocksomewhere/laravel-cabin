@@ -78,6 +78,16 @@ You can reset the locked time by pinging
   cabin()->ping('blog_12');
 ```
 
+Integrations that decorate Cabin can provide a request-scoped lock identity on the manager instance before using it:
+
+```php
+$manager = app('cabin');
+$manager->useLockIdentityResolver(fn (): ?string => app(MyLockIdentity::class)->resolve());
+$manager->lock('blog_12');
+```
+
+The resolver is optional. Without it, Cabin continues to identify a lock by the current Laravel session ID.
+
 You can use the following command to remove expired locks
 
 ```bash

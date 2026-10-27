@@ -175,6 +175,28 @@ class CabinFeatureTest extends TestCase
         $this->assertEquals($userA->id, cabin()->lockedBy($key));
     }
 
+    public function test_lock_identity_resolver_can_distinguish_tabs_in_the_same_session()
+    {
+        $lockIdentity = 'session-tab-one';
+        $key = 'article_1';
+
+        $cabin = cabin();
+        $cabin->useLockIdentityResolver(function () use (&$lockIdentity): string {
+            return $lockIdentity;
+        });
+
+        $this->assertTrue($cabin->lock($key));
+
+        $lockIdentity = 'session-tab-two';
+
+        $this->assertTrue($cabin->isLocked($key));
+        $this->assertFalse($cabin->lock($key));
+
+        $lockIdentity = 'session-tab-one';
+        $this->assertTrue($cabin->unlock($key));
+        $this->assertFalse($cabin->isLocked($key));
+    }
+
     public function test_a_string_user_id_can_hold_a_lock()
     {
         Schema::create('uuid_users', function (Blueprint $table) {
