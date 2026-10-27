@@ -2,6 +2,7 @@
 
 namespace Nocs\Cabin\Support;
 
+use Closure;
 use Nocs\Cabin\Models\CabinLock;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -19,6 +20,7 @@ class CabinManager
     protected $app;
     private $sessionID;
     private $connection;
+    private ?Closure $lockIdentityResolver = null;
 
     /**
      * Constructor
@@ -45,6 +47,13 @@ class CabinManager
         $this->sessionID = session()->getId() ?? null;
     }
 
+    public function useLockIdentityResolver(Closure $resolver): static
+    {
+        $this->lockIdentityResolver = $resolver;
+
+        return $this;
+    }
+
     public function lock ($key)
     {
         if ($this->isLocked($key)) {
@@ -53,7 +62,7 @@ class CabinManager
 
         $lock = CabinLock::on($this->connection)->firstOrNew([
             'key'           => $this->createKey($key),
-            'session_id'    => $this->sessionID,
+            'session_id'    => $this->lockIdentity(),
         ]);
 
         $lock->locked_at = Carbon::now();
@@ -78,7 +87,7 @@ class CabinManager
     {
         CabinLock::on($this->connection)->where([
             'key'           => $this->createKey($key),
-            'session_id'    => $this->sessionID,
+            'session_id'    => $this->lockIdentity(),
         ])->delete();
 
         return true;
@@ -89,7 +98,7 @@ class CabinManager
         $this->removeExpired();
 
         return CabinLock::on($this->connection)->where('key', $this->createKey($key))
-            ->where('session_id', '!=', $this->sessionID)
+            ->where('session_id', '!=', $this->lockIdentity())
             ->count()
                 > 0;
     }
@@ -115,7 +124,7 @@ class CabinManager
     {
         if ($lock = CabinLock::on($this->connection)->where([
             'key'           => $this->createKey($key),
-            'session_id'    => $this->sessionID,
+            'session_id'    => $this->lockIdentity(),
         ])->first()) {
             
             $lock->locked_at = Carbon::now();
@@ -129,6 +138,13 @@ class CabinManager
     public function createKey($key)
     {
         return md5(Str::slug($key));
+    }
+
+    private function lockIdentity(): ?string
+    {
+        return $this->lockIdentityResolver !== null
+            ? ($this->lockIdentityResolver)()
+            : $this->sessionID;
     }
 
     private function lookupGuard() {
